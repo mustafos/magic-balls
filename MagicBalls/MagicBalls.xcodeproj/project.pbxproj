@@ -15,6 +15,7 @@
 		6A211D412B82A9AA0077693B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6A211D402B82A9AA0077693B /* Assets.xcassets */; };
 		6A211D442B82A9AA0077693B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6A211D422B82A9AA0077693B /* LaunchScreen.storyboard */; };
 		6A211D4B2B82AC4A0077693B /* Ball.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A211D4A2B82AC4A0077693B /* Ball.swift */; };
+		6A759F7C2B867C2C00FAD0B0 /* SKWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A759F7B2B867C2C00FAD0B0 /* SKWebView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		6A211D402B82A9AA0077693B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6A211D432B82A9AA0077693B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6A211D4A2B82AC4A0077693B /* Ball.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ball.swift; sourceTree = "<group>"; };
+		6A759F7B2B867C2C00FAD0B0 /* SKWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWebView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 				6A211D332B82A9A80077693B /* AppDelegate.swift */,
 				6A211D352B82A9A80077693B /* GameScene.sks */,
 				6A211D392B82A9A80077693B /* GameScene.swift */,
+				6A759F7B2B867C2C00FAD0B0 /* SKWebView.swift */,
 				6A211D4A2B82AC4A0077693B /* Ball.swift */,
 				6A211D3B2B82A9A80077693B /* GameViewController.swift */,
 				6A211D3D2B82A9A90077693B /* Main.storyboard */,
@@ -147,6 +150,7 @@
 				6A211D3A2B82A9A80077693B /* GameScene.swift in Sources */,
 				6A211D3C2B82A9A80077693B /* GameViewController.swift in Sources */,
 				6A211D342B82A9A80077693B /* AppDelegate.swift in Sources */,
+				6A759F7C2B867C2C00FAD0B0 /* SKWebView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

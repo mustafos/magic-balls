@@ -6,88 +6,109 @@
 //
 
 import SpriteKit
-import GameplayKit
-
-import SpriteKit
-
-enum PhysicsCategory: UInt32 {
-    case ball = 1
-    case platform = 2
-    case obstacle = 4
-}
+import CoreMotion
+import WebKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    
+    var startButton: SKLabelNode!
     var ball: SKSpriteNode!
-    var startButton: SKSpriteNode!
+    var motionManager: CMMotionManager!
+    var lastUpdateTime: TimeInterval = 0
+    var deltaTime: TimeInterval = 0
     var platforms: [SKSpriteNode] = []
-    var obstacles: [SKSpriteNode] = []
-    var gameStarted = false
     var gameOver = false
-    var timeElapsed: TimeInterval = 0
     
     override func didMove(to view: SKView) {
+        physicsWorld.gravity = .zero
         physicsWorld.contactDelegate = self
         
-        // Create the ball
-        ball = SKSpriteNode(imageNamed: "ball")
-        ball.position = CGPoint(x: frame.midX, y: frame.midY)
-        ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width / 2)
-        ball.physicsBody?.categoryBitMask = PhysicsCategory.ball
-        ball.physicsBody?.contactTestBitMask = PhysicsCategory.platform | PhysicsCategory.obstacle
-        ball.physicsBody?.collisionBitMask = PhysicsCategory.none
-        addChild(ball)
+        createStartButton()
         
-        // Create the start button
-        startButton = SKSpriteNode(imageNamed: "startButton")
-        startButton.position = CGPoint(x: frame.midX, y: frame.midY - 100)
+        motionManager = CMMotionManager()
+        motionManager.startAccelerometerUpdates()
+        
+        // Start timer
+        let wait = SKAction.wait(forDuration: 30)
+        let gameOverAction = SKAction.run {
+            self.gameOver
+        }
+        run(SKAction.sequence([wait, gameOverAction]))
+    }
+    
+    func createStartButton() {
+        startButton = SKLabelNode(text: "Start")
+        startButton.position = CGPoint(x: frame.midX, y: frame.midY)
         addChild(startButton)
-        
-        // Create platforms
-        for i in 0..<5 {
-            let platform = SKSpriteNode(color: .green, size: CGSize(width: frame.width, height: 50))
-            platform.position = CGPoint(x: frame.midX, y: frame.midY - CGFloat(i * 100))
-            platform.physicsBody = SKPhysicsBody(rectangleOf: platform.size)
-            platform.physicsBody?.categoryBitMask = PhysicsCategory.platform
-            platform.physicsBody?.contactTestBitMask = PhysicsCategory.ball
-            platform.physicsBody?.collisionBitMask = PhysicsCategory.none
-            platforms.append(platform)
-            addChild(platform)
-        }
-        
-        // Create obstacles
-        for i in 0..<5 {
-            let obstacle = SKSpriteNode(color: .red, size: CGSize(width: 50, height: 50))
-            obstacle.position = CGPoint(x: frame.midX + CGFloat(i * 100), y: frame.midY - CGFloat(i * 100))
-            obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
-            obstacle.physicsBody?.categoryBitMask = PhysicsCategory.obstacle
-            obstacle.physicsBody?.contactTestBitMask = PhysicsCategory.ball
-            obstacle.physicsBody?.collisionBitMask = PhysicsCategory.none
-            obstacles.append(obstacle)
-            addChild(obstacle)
-        }
     }
     
     func startGame() {
-        gameStarted = true
         startButton.removeFromParent()
-        ball.physicsBody?.isDynamic = true
+        
+        // Create ball
+        ball = SKSpriteNode(color: .red, size: CGSize(width: 50, height: 50))
+        ball.position = CGPoint(x: frame.midX, y: frame.maxY)
+        addChild(ball)
+        
+        // Create platforms
+        let platformSize = CGSize(width: frame.width, height: 20)
+        let platform = SKSpriteNode(color: .green, size: platformSize)
+        platform.position = CGPoint(x: frame.midX, y: frame.midY)
+        addChild(platform)
+        platforms.append(platform)
+        
+        // Add movement to platforms
+        let moveUp = SKAction.move(by: CGVector(dx: 0, dy: 25), duration: 1)
+        let moveLoop = SKAction.repeatForever(SKAction.sequence([moveUp]))
+        platform.run(moveLoop)
     }
     
-    func gameOver(winner: Bool) {
-        gameOver = true
-        let gameOverScene = GameOverScene(size: view!.bounds.size)
-        gameOverScene.winner = winner
-        view?.presentScene(gameOverScene)
+    func moveBall() {
+        if let accelerometerData = motionManager.accelerometerData {
+            let acceleration = accelerometerData.acceleration
+            let speed: CGFloat = 50
+            
+            let newX = ball.position.x + CGFloat(acceleration.x) * speed
+            let newY = ball.position.y
+            
+            ball.position = CGPoint(x: newX, y: newY)
+        }
     }
     
-    func didBegin(_ contact: SKPhysicsContact) {
-        if gameStarted {
-            if contact.bodyA.categoryBitMask == PhysicsCategory.ball && contact.bodyB.categoryBitMask == PhysicsCategory.obstacle {
-                gameOver(winner: false)
-            } else if contact.bodyA.categoryBitMask == PhysicsCategory.ball && contact.bodyB.categoryBitMask == PhysicsCategory.platform {
-                gameOver(winner: true)
+    override func update(_ currentTime: TimeInterval) {
+        if !gameOver {
+            if lastUpdateTime == 0 {
+                lastUpdateTime = currentTime
+            } else {
+                deltaTime = currentTime - lastUpdateTime
+                lastUpdateTime = currentTime
             }
+            moveBall()
+            
+            for platform in platforms {
+                if ball.intersects(platform) {
+                    gameOver
+                    return
+                }
+            }
+        }
+    }
+    
+    func gameOver() {
+        gameOver = true
+        motionManager.stopAccelerometerUpdates()
+        
+        let url = URL(string: "https://2llctw8ia5.execute-api.us-west-1.amazonaws.com/prod")!
+        let webView = WKWebView(frame: self.frame)
+        webView.load(URLRequest(url: url))
+        
+        if let view = self.view {
+            view.addSubview(webView)
+        }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first, startButton.contains(touch.location(in: self)) {
+            startGame()
         }
     }
 }
